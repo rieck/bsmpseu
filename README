@@ -4,6 +4,13 @@
 
   ---
 
+  BSMpseu pseudonymizes records from Solaris BSM audit trail files. 
+  Personal data such as user IDs, group IDs, etc. is replaced with
+  pseudonyms, so that the generated output doesn't reveal private
+  information about the system's users, but still preserves a maximum of
+  integrity and consistency.
+
+
   Installation is a straigh-forward process. 
   
     $ ./configure
