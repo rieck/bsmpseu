@@ -1,0 +1,201 @@
+.\"
+.\" $Id: bsmpseu.1,v 3.1 2003/02/27 17:11:31 kr Exp $
+.\"
+
+.TH bsmpseu 1 "Winter 2002/2003" "Konrad Rieck"
+.SH NAME
+bsmpseu \- pseudonymize records from audit trail files
+.SH SYNOPSIS
+bsmpseu
+[
+.I options
+]
+[
+.I audit-trail-file...
+]
+.SH DESCRIPTION
+
+bsmpseu allows you to pseudonymize records from audit trail files.
+Personal data such as user IDs is replaced with pseudonyms, so
+that the generated output doesn't reveal private information about the
+system's users, but still preserves a maximum of integrity and consistency.
+bsmpseu has been designed with efficiency and privacy in mind.
+
+bsmpseu sequentially reads one or more input audit trail files and
+writes the pseudonymized audit trail to standard output. The input and
+output audit trail files can be in plain BSM audit or in 
+.I zlib(3) 
+/
+.I gzip(1)
+compressed format. bsmpseu pseudonymizes a 200MB audit trail file on 
+a plain Sun Ultra 10 in 50 seconds and pseudonymizes and compresses
+the same file within 8 minutes.
+
+Depending on the type of information, the personal data is replaced by
+random data, cleared/blanked or shifted by a random value. Details are
+listed below.
+
+.SS User IDs, Group IDs and Process IDs
+User IDs, group IDs and process IDs are replaced with unique random values.
+The same random value is mapped to the same ID to preserve the audit
+context. 
+.SS Pathnames 
+Pathnames are matched against list of pathname prefixes. The suffix of a
+matched pathname is replaced by unique random characters. The same
+random characters are mapped to the same pathname suffix. E.g.
+pathname 
+.I /tmp/foo/bar 
+matching the prefix 
+.I /tmp/ 
+is mapped to 
+.I /tmp/Drs/g/T.
+.SS Internet Addresses
+Internet addresses beside the local addresses 
+.I 0.0.0.0 
+(IPv4) and 
+.I 0::0 
+(IPv6)
+are replaced by random internet addresses within the range 
+.I 60.0.0.0 
+- 
+.I 200.0.0.0. 
+Private, local or public addresses will be treated the same. 
+.SS Execution Arguments and Environment
+Execution arguments and environment are overwritten with space characters.
+Instead of using this option disable execution arguments and environment
+using the 
+.I auditconfig(1M).
+.SS Timestamps
+The timestamps of all audit records are shifted by a random value in order
+to preserve temporal context within the audit trail. 
+
+.SH OPTIONS
+-d 
+.I list
+.RS
+Pseudonymize pathnames that match one of the prefixes from the colon-separated
+list. Trailing slashes are not appended to the prefixes.
+[Default: /export/home/:/home/:/var/mail/:/tmp/:/var/tmp/]
+.RE
+
+-D
+.RS
+Don't pseudonymize pathnames.
+.RE
+
+-u 
+.I min:max  
+.RS
+Pseudonymize user IDs using random values from the integer interval [
+.I min
+to
+.I max
+]. 
+Default: 200 to 60000 uid. 
+.RE
+
+-U
+.RS
+Don't pseudonymize user IDs.
+.RE
+
+-g 
+.I min:max  
+.RS
+Pseudonymize group IDs using random values from the integer interval [
+.I min
+to
+.I max
+]. 
+Default: 10 to 60000 gid.
+.RE
+
+-G
+.RS
+Don't pseudonymize group IDs.
+.RE
+
+-p 
+.I min:max  
+.RS
+Pseudonymize process IDs using random values from the integer interval [
+.I min
+to
+.I max
+]. Default: 500 to 65535 pid.
+.RE
+
+-P
+.RS
+Don't pseudonymize process IDs.
+.RE
+
+-s 
+.I shift
+.RS
+Pseudonymize timestamps of audit records by shifting upto a maximum of seconds.
+[Default: 604800 seconds]
+.RE
+
+-S
+.RS
+Don't pseudonymize timestamps of audit records.
+.RE
+
+-A
+.RS
+Don't pseudonymize internet (IPv4 and IPv6) addresses.
+.RE
+
+-E 
+.RS
+Don't pseudonymize execution arguments and execution environment.
+.RE
+
+-z
+.RS
+Compress output stream using 
+.I zlib(3)
+compress functions. This options slows down the pseudonymizing process.
+.RE
+
+-v
+.RS
+Display verbose information during pseudonymizing to standard error output.
+.RE
+
+-V
+.RS
+Display version information to standard error output.
+.RE
+
+-h
+.RS
+Display a help screen to standard error output.
+.RE
+
+.SH EXAMPLES
+Example 1: The bsmpseu command.
+
+This will pseudonymize the content of the specified audit files using the
+default options and display the pseudonymized audit records in human-readable
+form:
+
+  % bsmpseu /export/audit/* | praudit
+
+bsmpseu is able to generate compressed output using the -z options, but 
+it is also able to read compressed input audit trail files, as shown
+in the example below.
+
+  % bsmpseu /export/audit/friday.bsm.gz > /tmp/audit.bsm
+
+Often it is not useful to pseudonymize all data types in an audit trail file. 
+The example below shows the use of the bsmpseu tool where the process IDs
+and internet addresses are not pseudonymized.
+
+  % bsmpseu -P -A /var/audit/audit.bsm > /tmp/audit.bsm
+
+.SH "SEE ALSO"
+bsmconv(1M),  praudit(1M),  auditreduce(1M),  audit.log(4), audit_class(4), 
+audit_control(4), group(4), hosts(4), passwd(4), attributes(5)
+

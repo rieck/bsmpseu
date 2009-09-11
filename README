@@ -1,0 +1,18 @@
+ 
+  Pseudonymizer for Solaris BSM Audit Logs, http://www.roqe.org/bsmpseu
+  Copyright 2002, 2003 Konrad Rieck <kr@roqe.org> - All rights reserved.
+
+  ---
+
+  Installation is a straigh-forward process. 
+  
+    $ ./configure
+    $ make 
+    # make install
+  
+  For details on the program options see the provided man page
+
+    $ man bsmpseu
+
+  Have fun, 
+  Konrad Rieck
